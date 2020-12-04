@@ -1,4 +1,5 @@
 <?php
+require_once 'Validator.php';
 
 class Passport
 {
@@ -12,6 +13,7 @@ class Passport
         'ecl',
         'pid'
     ];
+    protected $additionalValidators = [];
 
     public static function buildBatchFromStream($stream)
     {
@@ -48,6 +50,11 @@ class Passport
         $this->dataFields[$key] = $value;
     }
 
+    public function addValidator(string $field, Validator $validator)
+    {
+        $this->additionalValidators[] = [$field, $validator];
+    }
+
     protected function validateRequiredFields()
     {
         foreach ($this->requiredFields as $fieldKey)
@@ -62,6 +69,20 @@ class Passport
 
     public function validate()
     {
-        return $this->validateRequiredFields();
+        if ($this->validateRequiredFields())
+        {
+            foreach ($this->additionalValidators as $validatorDefinition)
+            {
+                [$fieldKey, $validator] = $validatorDefinition;
+                if (!$validator->validate($this->dataFields[$fieldKey]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 }

@@ -55,4 +55,13 @@ class Group
 
         return $uniqueQuestions;
     }
+
+    public function getQuestionsAnsweredByAll(): array
+    {
+        $allQuestions = array_map(function (Person $person) {
+            return $person->questionsAnsweredYes;
+        }, $this->people);
+
+        return array_values(array_intersect(...$allQuestions));
+    }
 }

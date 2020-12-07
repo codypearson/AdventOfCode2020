@@ -38,6 +38,11 @@ class Rule
         return array_keys($this->canContain);
     }
 
+    public function getCanContain(): array
+    {
+        return $this->canContain;
+    }
+
     public function setCanContain(string $color, int $quantity)
     {
         $this->canContain[$color] = $quantity;

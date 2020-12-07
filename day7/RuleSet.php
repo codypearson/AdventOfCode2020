@@ -60,4 +60,20 @@ class RuleSet
         }
         return false;
     }
+
+    public function getBagsContained(string $color): int
+    {
+        $bagsContained = 0;
+        if (isset($this->ruleIndex[$color]))
+        {
+            $parentRule = $this->ruleIndex[$color];
+            $canContain = $parentRule->getCanContain();
+            foreach ($canContain as $containColor => $quantity)
+            {
+                $bagsContained += $quantity + ($this->getBagsContained($containColor) * $quantity);
+            }
+        }
+
+        return $bagsContained;
+    }
 }

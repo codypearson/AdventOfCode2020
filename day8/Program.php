@@ -14,17 +14,20 @@ class Program
         if (is_resource($input))
         {
             $this->loadFromStream($input);
+        } elseif (is_array($input))
+        {
+            $this->lines = $input;
         }
+        $this->executionCounter = array_fill(0, count($this->lines), 0);
     }
 
-    public function loadFromStream($stream)
+    protected function loadFromStream($stream)
     {
         $this->lines = [];
         while ($line = fgets($stream))
         {
             $this->lines[] = $line;
         }
-        $this->executionCounter = array_fill(0, count($this->lines), 0);
     }
 
     public function executeLine(int $lineNumber): int
@@ -46,7 +49,7 @@ class Program
         return ($lineNumber + 1);
     }
 
-    public function run(): int
+    public function run(bool $catchException = true): int
     {
         $lineNumber = 0;
         $lineCount = count($this->lines);
@@ -57,9 +60,48 @@ class Program
                 $lineNumber = $this->executeLine($lineNumber);
             } catch (HaltException $e)
             {
-                break;
+                if ($catchException)
+                {
+                    break;
+                } else
+                {
+                    throw $e;
+                }
             }
         }
         return $this->accumulator;
+    }
+
+    public function debug(): int
+    {
+        $possibleChanges = [
+            'nop' => 'jmp',
+            'jmp' => 'nop'
+        ];
+
+        foreach ($this->lines as $lineNumber => $line)
+        {
+            $newLine = null;
+            foreach ($possibleChanges as $from => $to)
+            {
+                $position = strpos($line, $from);
+                if ($position !== false)
+                {
+                    $newLine = substr_replace($line, $to, $position, strlen($from));
+                    break;
+                }
+            }
+            if (!is_null($newLine))
+            {
+                $newCode = $this->lines;
+                $newCode[$lineNumber] = $newLine;
+                $newProgram = new static($newCode);
+                try {
+                    return $newProgram->run(false);
+                } catch (HaltException) {
+                    continue;
+                }
+            }
+        }
     }
 }

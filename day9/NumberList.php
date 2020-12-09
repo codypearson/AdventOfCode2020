@@ -60,4 +60,26 @@ class NumberList
 
         return $numbers;
     }
+
+    public function findSum(int $sum): array|false
+    {
+        foreach ($this->numberList as $startIndex => $startNumber)
+        {
+            $sumCandidate = $startNumber;
+            $currentIndex = $startIndex;
+            do {
+                $currentIndex++;
+                if (!isset($this->numberList[$currentIndex]))
+                {
+                    return false;
+                }
+                $sumCandidate += $this->numberList[$currentIndex];
+                if ($sumCandidate == $sum)
+                {
+                    return array_slice($this->numberList, $startIndex, ($currentIndex - $startIndex));
+                }
+            } while ($sumCandidate < $sum);
+        }
+        return false;
+    }
 }
